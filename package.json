@@ -6,8 +6,8 @@
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
-		"format": "npx biome format --write",
-		"lint": "npx biome lint --write"
+		"format": "npx biome format",
+		"lint": "npx biome lint"
 	},
 	"keywords": ["ddd", "clean-arch"],
 	"author": "Paulo Campos <paulo.campos.dev@gmail.com>",

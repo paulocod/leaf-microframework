@@ -1,0 +1,97 @@
+name: Node.js CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - release/*
+      - hotfix/*
+      - feature/*
+      - bugfix/*
+      - test
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch all branches
+        run: git fetch --prune --unshallow
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: |
+          npm run lint || (echo "Linting failed. Please fix the lint errors before merging your pull request." && exit 1)
+
+      - name: Validate branch name
+        id: branch-validation
+        run: |
+          BRANCH_NAME=$(echo "${{ github.head_ref }}" | sed 's|refs/heads/||')
+          BRANCH_PATTERN='^(feature/|bugfix/|hotfix/|release/|dev|test|main)$'
+          if ! echo "$BRANCH_NAME" | grep -qE "$BRANCH_PATTERN"; then
+            echo "Error: Branch name '$BRANCH_NAME' does not follow the GitFlow naming convention."
+            echo "Please rename your branch to match the naming conventions and create a new pull request."
+            exit 1
+          fi
+
+      - name: Get last PR merge commit
+        id: get_last_pr
+        run: |
+          # Obtém a branch base do PR
+          BASE_BRANCH="${{ github.base_ref }}"
+
+          # Obtém o hash do último PR mesclado na branch base
+          git fetch origin
+          last_pr=$(git merge-base origin/$BASE_BRANCH HEAD || echo $(git rev-list --max-parents=0 HEAD))
+
+          echo "LAST_PR_COMMIT=$last_pr" >> $GITHUB_ENV
+
+      - name: Validate commit messages
+        run: |
+          # Define o padrão de mensagem de commit
+          COMMIT_PATTERN='^(feat|fix|chore|docs|style|refactor|perf|test|hotfix)(\([a-zA-Z0-9 ]+\))?: .{1,}$'
+
+          # Obtém a lista de mensagens dos commits desde o último PR até o HEAD
+          commits=$(git log --no-merges --format=%B --reverse ${{ env.LAST_PR_COMMIT }}..HEAD)
+
+          # Verifica se cada mensagem de commit segue o padrão
+          if [ -z "$commits" ]; then
+            echo "No commits found since the last PR or no PRs have been merged."
+            exit 0
+          fi
+
+          # Processa cada mensagem de commit
+          while IFS= read -r commit; do
+            # Ignora mensagens vazias
+            if [ -z "$(echo "$commit" | tr -d '[:space:]')" ]; then
+              echo "Warning: Empty commit message found and skipped."
+              continue
+            fi
+            # Verifica se a mensagem de commit segue o padrão
+            if ! echo "$commit" | grep -qP "$COMMIT_PATTERN"; then
+              echo "Error: Commit message '$commit' does not follow the Conventional Commits format."
+              echo "Please update your commit messages to follow the format 'type(scope): description' and create a new pull request."
+              exit 1
+            fi
+          done <<< "$commits"
+
+      # - name: Build
+      #   run: npm run build --if-present
+
+      # - name: Test
+      #   run: npm test

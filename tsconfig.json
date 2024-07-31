@@ -15,14 +15,6 @@
 		"resolveJsonModule": true,
 		"lib": ["ES2021"],
 		"baseUrl": "./",
-		"paths": {
-			"@core/*": ["src/core/*"],
-			"@application/*": ["src/application/*"],
-			"@domain/*": ["src/domain/*"],
-			"@infra/*": ["src/infra/*"],
-			"@test/*": ["test/*"],
-			"@utils/*": ["src/utils/*"]
-		},
 		"strict": true,
 		"esModuleInterop": true,
 		"moduleResolution": "node",

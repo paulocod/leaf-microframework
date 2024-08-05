@@ -53,11 +53,10 @@ export class Result<T> {
 		return new Result<U>(false, error);
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	public static combine(results: Result<any>[]): Result<void> {
+	public static combine<T>(results: Result<T>[]): Result<void> {
 		for (const result of results) {
 			if (result.isFailure) {
-				return Result.fail(result.getErrorValue());
+				return Result.fail(result.getErrorValue() as string);
 			}
 		}
 		return Result.ok();

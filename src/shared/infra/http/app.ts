@@ -2,8 +2,8 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
-import userRouter from "./modules/users/interfaces/http/userRoutes";
-import { config } from "./shared/config/config";
+import { userRouter } from "../../../modules/users/interfaces/http/userRoutes";
+import { config } from "../../config/config";
 
 const origin = {
 	origin: "*",

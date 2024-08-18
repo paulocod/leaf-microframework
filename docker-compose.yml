@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: leaf-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend-app:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      APP_PORT: ${APP_PORT}
+      APP_NAME: ${APP_NAME}
+      APP_VERSION: ${APP_VERSION}
+      NODE_ENV: ${NODE_ENV}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_DRIVER: ${DB_DRIVER}
+    ports:
+      - "${APP_PORT}:3333"
+    volumes:
+      - .:/src/app
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

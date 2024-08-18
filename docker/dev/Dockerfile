@@ -13,4 +13,5 @@ WORKDIR /var/app
 USER node
 COPY --chown=node:node --from=dependencies /var/app/node_modules node_modules/
 COPY --chown=node:node . .
+EXPOSE 3333
 CMD ["npm", "run", "dev"]

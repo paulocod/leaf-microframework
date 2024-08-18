@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { UserController } from "../http/userController";
-import { UserRepositoryImpl } from "../../infrastructure/userRepositoryImpl";
+import { UserRepositoryImpl } from "../../infra/userRepositoryImpl";
 import { UserService } from "../../application/userService";
 
 const userRouter = Router();
